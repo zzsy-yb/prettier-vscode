@@ -4,7 +4,7 @@
     "source.fixAll.eslint": true
   },
   "editor.formatOnSave": true,
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.defaultFormatter": "boboo.prettier-extension-vscode",
   "editor.formatOnType": false,
   "files.eol": "\n",
   "cSpell.words": [
