@@ -86,6 +86,11 @@ interface IExtensionConfig {
    * If true, enabled debug logs
    */
   enableDebugLogs: boolean;
+
+  /**
+   * If true, skip format import declaration
+   */
+  ignoreImportDeclaration: boolean;
 }
 /**
  * Configuration for prettier-vscode

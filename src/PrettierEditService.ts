@@ -22,9 +22,10 @@ import {
   PrettierFileInfoResult,
   PrettierModule,
   PrettierOptions,
+  PrettierVSCodeConfig,
   RangeFormattingOptions,
 } from "./types";
-import { getConfig } from "./util";
+import { getConfig, getCursorIndexSkipImport } from "./util";
 
 interface ISelectors {
   rangeLanguageSelector: ReadonlyArray<DocumentFilter>;
@@ -456,6 +457,7 @@ export default class PrettierEditService implements Disposable {
 
     const prettierOptions = this.getPrettierOptions(
       fileName,
+      text,
       parser as PrettierBuiltInParserName,
       vscodeConfig,
       resolvedConfig,
@@ -479,8 +481,9 @@ export default class PrettierEditService implements Disposable {
 
   private getPrettierOptions(
     fileName: string,
+    content: string,
     parser: PrettierBuiltInParserName,
-    vsCodeConfig: PrettierOptions,
+    vsCodeConfig: PrettierVSCodeConfig,
     configOptions: PrettierOptions | null,
     extensionFormattingOptions: ExtensionFormattingOptions
   ): Partial<PrettierOptions> {
@@ -507,6 +510,10 @@ export default class PrettierEditService implements Disposable {
       vsOpts.trailingComma = vsCodeConfig.trailingComma;
       vsOpts.useTabs = vsCodeConfig.useTabs;
       vsOpts.vueIndentScriptAndStyle = vsCodeConfig.vueIndentScriptAndStyle;
+      this.loggingService.logInfo(
+        "ignoreImportDeclaration:",
+        vsCodeConfig.ignoreImportDeclaration
+      );
     }
 
     this.loggingService.logInfo(
@@ -525,18 +532,27 @@ export default class PrettierEditService implements Disposable {
         rangeStart: extensionFormattingOptions.rangeStart,
       };
     }
+    let rangeStart: number | undefined;
+    if (vsCodeConfig.ignoreImportDeclaration) {
+      const extension = fileName.split(".").pop();
+      if (extension === "ts" || extension === "tsx") {
+        rangeStart = getCursorIndexSkipImport(fileName, content);
+        this.loggingService.logError("get file start pos.", rangeStart);
+      }
+    }
 
     const options: PrettierOptions = {
       ...(fallbackToVSCodeConfig ? vsOpts : {}),
+      ...(rangeFormattingOptions || {}),
       ...{
         /* cspell: disable-next-line */
         filepath: fileName,
         parser: parser as PrettierBuiltInParserName,
+        rangeStart: rangeStart,
       },
-      ...(rangeFormattingOptions || {}),
       ...(configOptions || {}),
     };
-
+    this.loggingService.logError("get file start pos.", options.rangeStart);
     if (extensionFormattingOptions.force && options.requirePragma === true) {
       options.requirePragma = false;
     }

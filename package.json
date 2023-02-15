@@ -2,7 +2,7 @@
   "name": "prettier-vscode",
   "displayName": "Prettier - Code formatter",
   "description": "Code formatter using prettier",
-  "version": "9.10.3",
+  "version": "9.10.3_extension",
   "publisher": "esbenp",
   "author": "Prettier <@prettiercode>",
   "galleryBanner": {
@@ -91,7 +91,6 @@
     ]
   },
   "devDependencies": {
-    "@types/fs-extra": "^11.0.1",
     "@types/glob": "^7.2.0",
     "@types/mocha": "^10.0.0",
     "@types/node": "16.11.17",
@@ -390,6 +389,12 @@
           ],
           "default": "auto",
           "markdownDescription": "%ext.config.embeddedLanguageFormatting%",
+          "scope": "resource"
+        },
+        "prettier.ignoreImportDeclaration": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "%ext.config.ignoreImportDeclaration%",
           "scope": "resource"
         }
       }

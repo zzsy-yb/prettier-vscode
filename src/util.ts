@@ -1,5 +1,6 @@
 import * as os from "os";
 import * as path from "path";
+import * as ts from "typescript";
 import { Uri, workspace } from "vscode";
 import { PrettierVSCodeConfig } from "./types";
 
@@ -50,4 +51,31 @@ export function getConfig(uri?: Uri): PrettierVSCodeConfig {
   }
 
   return config;
+}
+
+export function getCursorIndexSkipImport(
+  fileName: string,
+  content: string
+): number {
+  let startPos = 0;
+  const sourceFile = ts.createSourceFile(
+    fileName,
+    content,
+    ts.ScriptTarget.ES2015,
+    /* setParentNodes */ true,
+    ts.ScriptKind.TS
+  );
+  function visitNode(node: ts.Node) {
+    switch (node.kind) {
+      case ts.SyntaxKind.ImportDeclaration:
+      case ts.SyntaxKind.ImportSpecifier:
+        break;
+      default:
+        if (startPos === 0) {
+          startPos = Math.max(startPos, node.pos);
+        }
+    }
+  }
+  if (sourceFile) ts.forEachChild(sourceFile, visitNode);
+  return startPos;
 }
