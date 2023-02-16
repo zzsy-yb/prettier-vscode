@@ -72,7 +72,7 @@ export function getCursorIndexSkipImport(
         break;
       default:
         if (startPos === 0) {
-          startPos = Math.max(startPos, node.pos);
+          startPos = Math.max(startPos, node.getStart());
         }
     }
   }

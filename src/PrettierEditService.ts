@@ -522,16 +522,6 @@ export default class PrettierEditService implements Disposable {
         : "Detected local configuration (i.e. .prettierrc or .editorconfig), VS Code configuration will not be used"
     );
 
-    let rangeFormattingOptions: RangeFormattingOptions | undefined;
-    if (
-      extensionFormattingOptions.rangeEnd &&
-      extensionFormattingOptions.rangeStart
-    ) {
-      rangeFormattingOptions = {
-        rangeEnd: extensionFormattingOptions.rangeEnd,
-        rangeStart: extensionFormattingOptions.rangeStart,
-      };
-    }
     let rangeStart: number | undefined;
     if (vsCodeConfig.ignoreImportDeclaration) {
       const extension = fileName.split(".").pop();
@@ -541,6 +531,23 @@ export default class PrettierEditService implements Disposable {
       }
     }
 
+    let rangeFormattingOptions: RangeFormattingOptions | undefined;
+    if (
+      extensionFormattingOptions.rangeEnd &&
+      extensionFormattingOptions.rangeStart
+    ) {
+      rangeFormattingOptions = {
+        rangeEnd: extensionFormattingOptions.rangeEnd,
+        rangeStart: extensionFormattingOptions.rangeStart,
+      };
+    } else {
+      if (rangeStart !== undefined)
+        rangeFormattingOptions = {
+          rangeEnd: Number.POSITIVE_INFINITY,
+          rangeStart: rangeStart,
+        };
+    }
+
     const options: PrettierOptions = {
       ...(fallbackToVSCodeConfig ? vsOpts : {}),
       ...(rangeFormattingOptions || {}),
@@ -548,11 +555,13 @@ export default class PrettierEditService implements Disposable {
         /* cspell: disable-next-line */
         filepath: fileName,
         parser: parser as PrettierBuiltInParserName,
-        rangeStart: rangeStart,
       },
       ...(configOptions || {}),
     };
-    this.loggingService.logError("get file start pos.", options.rangeStart);
+    this.loggingService.logError(
+      "get file start pos.",
+      options.rangeStart + " " + options.rangeEnd
+    );
     if (extensionFormattingOptions.force && options.requirePragma === true) {
       options.requirePragma = false;
     }
